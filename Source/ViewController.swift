@@ -18,10 +18,9 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
     var isStereo:Bool = false
     var autoChg:Bool = false
     
-    let SIZE:Int = 1024
-    let threadGroupCount = MTLSizeMake(20,20, 1)
-    lazy var threadGroups: MTLSize = { MTLSizeMake(SIZE / threadGroupCount.width, SIZE / threadGroupCount.height, 1) }()
-    
+    var threadGroupCount = MTLSize()
+    var threadGroups = MTLSize()
+
     lazy var device: MTLDevice! = MTLCreateSystemDefaultDevice()
     lazy var defaultLibrary: MTLLibrary! = { self.device.makeDefaultLibrary() }()
     lazy var commandQueue: MTLCommandQueue! = { return self.device.makeCommandQueue() }()
@@ -42,7 +41,10 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
             pipeline1 = try device.makeComputePipelineState(function: kf1)
         } catch { fatalError("error creating pipelines") }
         
-        reset()
+        let w = pipeline1.threadExecutionWidth
+        let h = pipeline1.maxTotalThreadsPerThreadgroup / w
+        threadGroupCount = MTLSizeMake(w, h, 1)
+
         wg.delegate = self
         initializeWidgetGroup()
         layoutViews()
@@ -54,6 +56,7 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
         view.window?.delegate = self
         resizeIfNecessary()
         dvrCount = 1 // resize metalviews without delay
+        reset()
     }
     
     //MARK: -
@@ -266,6 +269,7 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
         arcBall.initialize(100,100)
         control.camera = float3(0.9542138, 10.825986, 1.3115228)
         control.focus = float3(0.9522361, 10.927513, 13.383794)
+        wg.hotKey("M")
     }
     
     //MARK: -
@@ -370,10 +374,9 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
         metalTextureViewL.initialize(outTextureL)
         metalTextureViewR.initialize(outTextureR)
         
-        let maxsz = max(xsz,ysz) + Int(threadGroupCount.width-1)
-        threadGroups = MTLSizeMake(
-            maxsz / threadGroupCount.width,
-            maxsz / threadGroupCount.height,1)
+        let xs = xsz/threadGroupCount.width + 1
+        let ys = ysz/threadGroupCount.height + 1
+        threadGroups = MTLSize(width:xs, height:ys, depth: 1)
     }
     
     //MARK: -

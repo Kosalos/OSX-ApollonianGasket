@@ -1,0 +1,90 @@
+The Apollonian Gasket in 3D
+
+Widgets:
+Mouse click on a widget to select it.
+It's legend will turn Green.
+You can also move the focus up/down with the '<' and '>' keys.
+Press the assigned Hotkey character to move the focus directly.
+
+Now on the image:
+Mouse drag to control the widget's parameters.
+You can also use the Arrow keys.
+Note: Hold down the <option> key to increase the alteration amount.
+Note: Hold down the <A> key to decrease the alteration amount.
+
+Note: certain widget rows manage a three part parameter (x,y and z).
+The first graph displays the x,y values, the second graph displays the z value.
+Hold down the <Shift> key to apply X axis movements to the Z value (second graph).
+
+Buttons:
+A button command is performed by Mouse clicking on the legend.
+
+Note: Press <1> to toggle display of the control panel.
+Note: Use can exit program by press the <esc> key.
+
+Z. Zoom:
+   affect camera distance from towers.
+
+D. minDist:
+   control how closely the distance estimation algorithm approaches the objects.
+   effectively the image resolution.
+
+2. Multiplier:
+   drastic effect in the algorithm, but nothing compared to the following,
+
+3. Dali:
+   who tears the towers into pieces like something Salvador Dali would enjoy.
+
+L. Light:
+   control position of Light source.
+
+C. Tint
+   colorize the towers.
+
+4. Ambient...
+   Collection of lighting effects.
+   sMin,sMax,sMult and sAmt control a Shadow effect.
+   (move among these widgets via the '<','>' keys or mouse clicks)
+
+5. autoChg:
+   automatically cycles all the lighting effects.
+
+6. Foam, Foam2, Bend
+   experimental variables to trash the classic algorithm.
+   (move among these widgets via the '<','>' keys or mouse clicks)
+
+F  Fog:
+   distance affects brightness.
+
+V. Save/Load:
+   launch the Save/Load dialog.
+
+7. Reset:
+   return to original parameters.
+
+O. Stereo: toggles stereo viewing
+   Not very exciting on this app; don't know why..
+   The image is rendered twice, for 'cross-eyed' 3D viewing.
+   With the iPad held two feet away, slightly cross
+   your eyes so that there is a third image in the middle.
+   Relax your gaze, and concentrate only on that
+   middle image, which is in 3D.
+
+8. Parallax
+   decide which poritions of the image should be 'closer' rather than 'farther', then
+   use the Parallax widget to adjust direction and intensity of the the stereo effect.
+   you will probably have to adjust parallax whenever you Rotate the image.
+
+M. Move
+   Move the camera position.
+   Hold down htr <Shift> key to access the 3rd axis of movement.
+
+R. Rotate
+   crudely rotate the camera orientation.
+
+9. Texture
+   you can select an image (jpg, png) to texture the object.
+   click this widget to launch the image picker dialog.
+
+T. When a texture is loaded these companion widgets control the center
+   and scaling of the texture

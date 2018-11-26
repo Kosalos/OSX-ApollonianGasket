@@ -45,7 +45,7 @@ class SaveLoadViewController: NSViewController,NSTableViewDataSource, NSTableVie
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        let cell:SaveLoadCell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "SLCell"), owner: self) as! SaveLoadCell
+        let cell:SaveLoadCell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier("SLCell"), owner: self) as! SaveLoadCell
         var str:String = ""
         
         dateString = determineDateString(row)

@@ -45,4 +45,6 @@ typedef struct {
     int txtOnOff;
     vector_float2 txtSize;
     vector_float3 txtCenter;
+    
+    int style; // 0,1 = apollonian 1,2
 } Control;

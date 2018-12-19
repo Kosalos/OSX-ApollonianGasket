@@ -45,6 +45,7 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
         let h = pipeline1.maxTotalThreadsPerThreadgroup / w
         threadGroupCount = MTLSizeMake(w, h, 1)
 
+        control.style = 0
         wg.delegate = self
         initializeWidgetGroup()
         layoutViews()
@@ -62,7 +63,7 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
     //MARK: -
     
     func resizeIfNecessary() {
-        let minWinSize:CGSize = CGSize(width:700, height:680)
+        let minWinSize:CGSize = CGSize(width:700, height:700)
         var r:CGRect = (view.window?.frame)!
         
         if r.size.width < minWinSize.width || r.size.height < minWinSize.height {
@@ -152,24 +153,30 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
         wg.addSingleFloat("",&control.lighting.shadowMax,sPmin,sPmax,sPchg, "sMax")
         wg.addSingleFloat("",&control.lighting.shadowMult,sPmin,sPmax,sPchg, "sMult")
         wg.addSingleFloat("",&control.lighting.shadowAmt,sPmin,sPmax,sPchg, "sAmt")
-        
         wg.addCommand("5","auto Chg",.autoChg)
+        
         wg.addLine()
-        wg.addSingleFloat("6",&control.foam, 0.5,2,0.005, "Foam")
-        wg.addSingleFloat("",&control.foam2, 0.5,2,0.003, "Foam2")
-        wg.addSingleFloat("",&control.bend, 0.01,0.03,0.00002, "Bend")
+        let str:String = control.style == 0 ? "Apollonian1" : "Apollonian2"
+        wg.addCommand("S",str,.style)
+        wg.addSingleFloat("6",&control.foam, 0.5,2,0.005, "Param1")
+        wg.addSingleFloat("7",&control.foam2, 0.5,2,0.003, "Param2")
+        
+        if control.style == 0 {
+            wg.addSingleFloat("8",&control.bend, 0.01,0.03,0.00002, "Param3")
+        }
+        
         wg.addLine()
         wg.addSingleFloat("F",&control.fog, 10,100,3, "Fog")
         wg.addLine()
         wg.addCommand("V","Save/Load",.saveLoad)
         wg.addCommand("H","Help",.help)
-        wg.addCommand("7","Reset",.reset)
+        wg.addCommand("N","Reset",.reset)
         
         wg.addLine()
         wg.addColor(.stereo,Float(RowHT * 2))
         wg.addCommand("O","Stereo",.stereo)
         let parallaxRange:Float = 0.008
-        wg.addSingleFloat("8",&control.parallax, -parallaxRange,+parallaxRange,0.0002, "Parallax")
+        wg.addSingleFloat("P",&control.parallax, -parallaxRange,+parallaxRange,0.0002, "Parallax")
         
         wg.addLine()
         wg.addCommand("M","Move",.move)
@@ -217,6 +224,12 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
             }
         case .refresh :
             updateImage()
+        case .style :
+            control.style = control.style > 0 ? 0 : 1
+            wg.focus += 1   // hop to companion param1
+            reset()
+            initializeWidgetGroup()
+            updateImage()
         default :
             break
         }
@@ -260,15 +273,26 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
         control.lighting.shadowMult = 0.5
         control.lighting.shadowAmt = 0.1
         control.dali = 1
-        control.foam = 1
-        control.foam2 = 1
-        control.fog = 100
-        control.bend = 0.02
+        control.foam = 1.05265248
+        control.foam2 = 1.06572711
+        control.bend = 0.0202780124
         
+        if control.style == 1 {
+            control.minDist = 0.000464375014
+            control.multiplier = 0.00999999977
+            control.dali = 0.604027212
+            control.foam = 0.5
+            control.foam2 = 0.751381218
+            control.bend = 0.0199999996
+        }
+        
+        control.fog = 100
         autoChg = false
         arcBall.initialize(100,100)
-        control.camera = float3(0.9542138, 10.825986, 1.3115228)
-        control.focus = float3(0.9522361, 10.927513, 13.383794)
+        control.camera = float3(0.42461035, 10.847559, 2.5749633)
+        control.focus = float3(0.42263266, 10.949086, 14.647235)
+        
+        initializeWidgetGroup()
         wg.hotKey("M")
     }
     

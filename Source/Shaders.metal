@@ -1,6 +1,8 @@
 // https://github.com/portsmouth/snelly (under fractals: apollonian_pt.html)
 // also visit: http://paulbourke.net/fractals/apollony/
 // lighting effects: https://github.com/shockham/mandelbulb
+// apollonian: https://www.shadertoy.com/view/4ds3zn
+// apollonian2: https://www.shadertoy.com/view/llKXzh
 
 #include <metal_stdlib>
 #import "Shader.h"
@@ -13,6 +15,8 @@ constant float MAX_DIST = 20; //100.0;
 constant float EPSILON = 0.0001;
 constant float NE = 0.001;
 
+float scene(float3 pos,Control control);
+
 float3 toRectangular(float3 sph) {
     float ss = sph.x * sin(sph.z);
     return float3( ss * cos(sph.y), ss * sin(sph.y), sph.x * cos(sph.z));
@@ -22,45 +26,6 @@ float3 toSpherical(float3 rec) {
     return float3(length(rec),
                   atan2(rec.y,rec.x),
                   atan2(sqrt(rec.x*rec.x+rec.y*rec.y), rec.z));
-}
-
-float scene(float3 pos,Control control) {
-    const float PI = 3.1415926;
-    float scale = 0.001 + control.dali;
-    
-    float s = 1.0;
-    float aa = control.multiplier * 100;
-    float t = control.foam2 + 0.25 * cos(control.bend * PI * aa * (pos.z - pos.x) / scale);
-    
-    for (int i=0; i<10; i++) {
-        pos = -1.0 + 2.0 * fract(0.5 * pos + 0.5);
-        float r2 = dot(pos,pos);
-        float k = t/r2;
-        pos *= k * control.foam;
-        s *= k * control.foam;
-    }
-    
-    return 1.5 * (0.25 * abs(pos.y) / (s * scale) );
-}
-
-float shortest_dist(float3 eye, float3 marchingDirection, Control control) {
-    float start = MIN_DIST;
-    float end = MAX_DIST;
-    float depth = start;
-    
-    for (int i = 0; i < MAX_MARCHING_STEPS; i++) {
-        float dist = scene(eye + depth * marchingDirection,control);
-        if (dist < control.minDist) {
-            return depth;
-        }
-        
-        depth += dist;
-        
-        if (depth >= end) {
-            return end;
-        }
-    }
-    return end;
 }
 
 float3 getNormal(float3 p, Control control) {
@@ -127,6 +92,21 @@ float soft_shadow(float3 camera, float3 light, float mint, float maxt, float k, 
     return res;
 }
 
+typedef float3 vec3;
+typedef float2 vec2;
+
+vec3 zcalcNormal( vec3 pos, Control control)
+{
+    pos = fract(pos);
+    
+    vec2 e = vec2(1.0,-1.0) * 0.0057;
+    
+    return normalize(e.xyy * scene( pos + e.xyy,control ) +
+                     e.yyx * scene( pos + e.yyx,control ) +
+                     e.yxy * scene( pos + e.yxy,control ) +
+                     e.xxx * scene( pos + e.xxx,control ) );
+}
+
 float3 lighting(float ambient, float diffuse, float specular, float harshness, float3 p, float3 eye, Control control) {
     float3 color = float3(ambient);
     float3 normal = getNormal(p,control);
@@ -140,6 +120,62 @@ float3 lighting(float ambient, float diffuse, float specular, float harshness, f
     color = mix(color, color * occ * soft_shadow(p, control.light, control.lighting.shadowMin, control.lighting.shadowMax * 10, control.lighting.shadowMult * 30,control), control.lighting.shadowAmt);
     
     return color;
+}
+
+float scene(float3 pos,Control control) {
+    const float PI = 3.1415926;
+    float scale = 0.001 + control.dali * 5;
+    float aa = control.multiplier * 100;
+    float k,t = control.foam2 + 0.25 * cos(control.bend * PI * aa * (pos.z - pos.x) / scale);
+
+    // style 1 --------------------------------------
+    if(control.style == 1) {
+        for( int i=0; i<6; ++i) {
+            pos = -1.0 + 2.0 * fract(0.5 * pos + 0.5);
+            pos -= sign(pos) * control.foam / 20;
+            
+            float r2 = dot(pos,pos);
+            float k = t / r2; ///control.foam2 / r2;
+            pos *= k;
+            scale *= k;
+        }
+        
+        float d1 = sqrt( min( min( dot(pos.xy,pos.xy), dot(pos.yz,pos.yz) ), dot(pos.zx,pos.zx) ) ) - 0.02;
+        float dmi = min(d1,abs(pos.y));
+        return 0.5 * dmi / scale;
+    }
+    
+    // style 0 --------------------------------------
+    scale = 0.001 + control.dali;
+
+    for (int i=0; i<10; ++i) {
+        pos = -1.0 + 2.0 * fract(0.5 * pos + 0.5);
+        k = t / dot(pos,pos);
+        pos *= k * control.foam;
+        scale *= k * control.foam;
+    }
+
+    return 1.5 * (0.25 * abs(pos.y) / scale);
+}
+
+float shortest_dist(float3 eye, float3 marchingDirection, Control control) {
+    float start = MIN_DIST;
+    float end = MAX_DIST;
+    float depth = start;
+    
+    for (int i = 0; i < MAX_MARCHING_STEPS; i++) {
+        float dist = scene(eye + depth * marchingDirection,control);
+        if (dist < control.minDist) {
+            return depth;
+        }
+        
+        depth += dist;
+        
+        if (depth >= end) {
+            return end;
+        }
+    }
+    return end;
 }
 
 kernel void rayMarchShader

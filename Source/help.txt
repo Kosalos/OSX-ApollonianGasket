@@ -49,9 +49,8 @@ C. Tint
 5. autoChg:
    automatically cycles all the lighting effects.
 
-6. Foam, Foam2, Bend
-   experimental variables to trash the classic algorithm.
-   (move among these widgets via the '<','>' keys or mouse clicks)
+S. Apollonian1 vs. Apollonian2  style
+6,7,8. experimental variables to trash the classic algorithms.
 
 F  Fog:
    distance affects brightness.

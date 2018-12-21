@@ -46,6 +46,14 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
         threadGroupCount = MTLSizeMake(w, h, 1)
 
         control.style = 0
+        control.lighting.ambient = 0.5
+        control.lighting.diffuse = 0.5
+        control.lighting.specular = 0.5
+        control.lighting.harshness = 0.5
+        control.lighting.saturation = 0.5
+        control.lighting.gamma = 0.5
+        control.multiplier = 0.5
+
         wg.delegate = self
         initializeWidgetGroup()
         layoutViews()
@@ -89,10 +97,34 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
     //MARK: -
 
     var circleAngle:Float = 0
+    var askToClearColoringParams:Bool = false
 
     @objc func timerHandler() {
         var refresh:Bool = wg.update()
         let chgAmount = cosf(circleAngle) / 100
+        
+        if askToClearColoringParams {
+            askToClearColoringParams = false
+            
+            let alert = NSAlert()
+            alert.messageText = "Zero the coloring parameters?"
+            alert.informativeText = "Set coloring parameters to not affect texture colors?"
+            alert.addButton(withTitle: "NO")
+            alert.addButton(withTitle: "YES")
+            alert.beginSheetModal(for: vc.view.window!) {( returnCode: NSApplication.ModalResponse) -> Void in
+                if returnCode.rawValue == 1001 {
+                    self.control.lighting.ambient = 0
+                    self.control.lighting.diffuse = 0
+                    self.control.lighting.specular = 0.7
+                    self.control.lighting.harshness = 0
+                    self.control.lighting.saturation = 0
+                    self.control.lighting.gamma = 0
+                    self.control.color = float3(1)
+                    self.wg.refresh()
+                    self.updateImage()
+                }
+            }
+        }
         
         if autoChg {
             func alter(_ v: inout Float) {
@@ -185,7 +217,7 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
         wg.addLine()
         wg.addColor(.texture,Float(RowHT - 2))
         wg.addCommand("9","Texture",.texture)
-        wg.addTriplet("T",&control.txtCenter,0.01,1,0.02,"Pos, Sz")
+        wg.addTriplet("T",&control.txtCenter,0.01,1,0.002,"Pos, Sz")
 
         wg.refresh()
     }
@@ -261,13 +293,13 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
         control.color = float3(1,1,1)
         control.zoom = 0.956
         control.minDist = 0.006
-        control.lighting.ambient = 0.5
-        control.lighting.diffuse = 0.5
-        control.lighting.specular = 0.5
-        control.lighting.harshness = 0.5
-        control.lighting.saturation = 0.5
-        control.lighting.gamma = 0.5
-        control.multiplier = 0.5
+//        control.lighting.ambient = 0.5
+//        control.lighting.diffuse = 0.5
+//        control.lighting.specular = 0.5
+//        control.lighting.harshness = 0.5
+//        control.lighting.saturation = 0.5
+//        control.lighting.gamma = 0.5
+//        control.multiplier = 0.5
         control.lighting.shadowMin = 0.5
         control.lighting.shadowMax = 0.5
         control.lighting.shadowMult = 0.5
@@ -310,6 +342,8 @@ class ViewController: NSViewController, NSWindowDelegate, WGDelegate {
             control.txtCenter.x = 0.5
             control.txtCenter.y = 0.5
             control.txtCenter.z = 0.01
+
+            askToClearColoringParams = true
             return textureOut
         }
         catch {
